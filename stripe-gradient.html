@@ -289,6 +289,127 @@
             border-color: #635bff;
             box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.1);
         }
+
+        .import-export-group {
+            border-top: 1px solid #e3e8ee;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+
+        .import-export-group h4 {
+            font-size: 0.95rem;
+            color: #0a2540;
+            margin-bottom: 12px;
+        }
+
+        .export-btn,
+        .import-btn,
+        .copy-btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 8px;
+        }
+
+        .export-btn {
+            background: #10b981;
+            color: white;
+        }
+
+        .export-btn:hover {
+            background: #059669;
+        }
+
+        .import-btn {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .import-btn:hover {
+            background: #2563eb;
+        }
+
+        .copy-btn {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .copy-btn:hover {
+            background: #7c3aed;
+        }
+
+        .json-textarea {
+            width: 100%;
+            height: 80px;
+            padding: 10px;
+            border: 2px solid #e3e8ee;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            resize: vertical;
+            margin-bottom: 8px;
+        }
+
+        .json-textarea:focus {
+            outline: none;
+            border-color: #635bff;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #0a2540;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 2000;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: #10b981;
+        }
+
+        .toast.error {
+            background: #ef4444;
+        }
+
+        .color-with-alpha {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .color-with-alpha input[type="color"] {
+            flex: 1;
+            height: 36px;
+        }
+
+        .color-with-alpha input[type="range"] {
+            width: 60px;
+            height: 6px;
+        }
+
+        .alpha-value {
+            font-size: 0.75rem;
+            color: #635bff;
+            font-weight: 600;
+            min-width: 35px;
+            text-align: right;
+        }
     </style>
 </head>
 
@@ -311,23 +432,39 @@
         </div>
 
         <div class="setting-group">
-            <label>Custom Colors</label>
+            <label>Custom Colors (with Alpha)</label>
             <div class="color-inputs">
                 <div>
                     <label style="font-size: 0.8rem;">Color 1</label>
-                    <input type="color" id="color1" value="#1dcb5d">
+                    <div class="color-with-alpha">
+                        <input type="color" id="color1" value="#1dcb5d">
+                        <input type="range" id="alpha1" min="0" max="1" step="0.05" value="1">
+                        <span class="alpha-value" id="alpha1Value">100%</span>
+                    </div>
                 </div>
                 <div>
                     <label style="font-size: 0.8rem;">Color 2</label>
-                    <input type="color" id="color2" value="#ffe85e">
+                    <div class="color-with-alpha">
+                        <input type="color" id="color2" value="#ffe85e">
+                        <input type="range" id="alpha2" min="0" max="1" step="0.05" value="1">
+                        <span class="alpha-value" id="alpha2Value">100%</span>
+                    </div>
                 </div>
                 <div>
                     <label style="font-size: 0.8rem;">Color 3</label>
-                    <input type="color" id="color3" value="#ffa832">
+                    <div class="color-with-alpha">
+                        <input type="color" id="color3" value="#ffa832">
+                        <input type="range" id="alpha3" min="0" max="1" step="0.05" value="1">
+                        <span class="alpha-value" id="alpha3Value">100%</span>
+                    </div>
                 </div>
                 <div>
                     <label style="font-size: 0.8rem;">Color 4</label>
-                    <input type="color" id="color4" value="#ffce48">
+                    <div class="color-with-alpha">
+                        <input type="color" id="color4" value="#ffce48">
+                        <input type="range" id="alpha4" min="0" max="1" step="0.05" value="1">
+                        <span class="alpha-value" id="alpha4Value">100%</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -431,7 +568,16 @@
         <div class="setting-group">
             <button class="pause-btn" id="pauseBtn">⏸️ Pause Animation</button>
         </div>
+
+        <div class="import-export-group">
+            <h4>📋 Import / Export Settings</h4>
+            <button class="export-btn" id="exportBtn">📤 Export to Clipboard</button>
+            <textarea class="json-textarea" id="jsonTextarea" placeholder="Paste JSON here to import..."></textarea>
+            <button class="import-btn" id="importBtn">📥 Import Settings</button>
+        </div>
     </div>
+
+    <div class="toast" id="toast"></div>
 
     <section class="hero-section">
         <div class="gradient-stripe-container">
@@ -459,10 +605,10 @@
         let colorBlendMode = 0;
         let blendStrength = 1.0;
         let currentColors = {
-            color1: { r: 0.114, g: 0.796, b: 0.365 },
-            color2: { r: 1.0, g: 0.898, b: 0.369 },
-            color3: { r: 1.0, g: 0.659, b: 0.196 },
-            color4: { r: 1.0, g: 0.808, b: 0.282 }
+            color1: { r: 0.114, g: 0.796, b: 0.365, a: 1.0 },
+            color2: { r: 1.0, g: 0.898, b: 0.369, a: 1.0 },
+            color3: { r: 1.0, g: 0.659, b: 0.196, a: 1.0 },
+            color4: { r: 1.0, g: 0.808, b: 0.282, a: 1.0 }
         };
 
         // Color presets
@@ -529,17 +675,32 @@
             } : null;
         }
 
-        // Update colors
+        // Update colors (preserving alpha)
         function updateColors() {
-            currentColors.color1 = hexToRgb(document.getElementById('color1').value);
-            currentColors.color2 = hexToRgb(document.getElementById('color2').value);
-            currentColors.color3 = hexToRgb(document.getElementById('color3').value);
-            currentColors.color4 = hexToRgb(document.getElementById('color4').value);
+            const rgb1 = hexToRgb(document.getElementById('color1').value);
+            const rgb2 = hexToRgb(document.getElementById('color2').value);
+            const rgb3 = hexToRgb(document.getElementById('color3').value);
+            const rgb4 = hexToRgb(document.getElementById('color4').value);
+            currentColors.color1 = { ...rgb1, a: currentColors.color1.a };
+            currentColors.color2 = { ...rgb2, a: currentColors.color2.a };
+            currentColors.color3 = { ...rgb3, a: currentColors.color3.a };
+            currentColors.color4 = { ...rgb4, a: currentColors.color4.a };
         }
 
         // Color inputs
         ['color1', 'color2', 'color3', 'color4'].forEach(id => {
             document.getElementById(id).addEventListener('input', updateColors);
+        });
+
+        // Alpha sliders
+        [1, 2, 3, 4].forEach(i => {
+            const alphaSlider = document.getElementById(`alpha${i}`);
+            const alphaValue = document.getElementById(`alpha${i}Value`);
+            alphaSlider.addEventListener('input', (e) => {
+                const alpha = parseFloat(e.target.value);
+                currentColors[`color${i}`].a = alpha;
+                alphaValue.textContent = Math.round(alpha * 100) + '%';
+            });
         });
 
         // Speed control
@@ -649,6 +810,190 @@
             isPaused = !isPaused;
             pauseBtn.classList.toggle('paused');
             pauseBtn.textContent = isPaused ? '▶️ Resume Animation' : '⏸️ Pause Animation';
+        });
+
+        // Toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // RGB to Hex
+        function rgbToHex(r, g, b) {
+            const toHex = (c) => {
+                const hex = Math.round(c * 255).toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+            };
+            return '#' + toHex(r) + toHex(g) + toHex(b);
+        }
+
+        // Export settings
+        function exportSettings() {
+            const settings = {
+                colors: {
+                    color1: { hex: rgbToHex(currentColors.color1.r, currentColors.color1.g, currentColors.color1.b), alpha: currentColors.color1.a },
+                    color2: { hex: rgbToHex(currentColors.color2.r, currentColors.color2.g, currentColors.color2.b), alpha: currentColors.color2.a },
+                    color3: { hex: rgbToHex(currentColors.color3.r, currentColors.color3.g, currentColors.color3.b), alpha: currentColors.color3.a },
+                    color4: { hex: rgbToHex(currentColors.color4.r, currentColors.color4.g, currentColors.color4.b), alpha: currentColors.color4.a }
+                },
+                animation: {
+                    speed: animationSpeed,
+                    angle: parseFloat(document.getElementById('angle').value),
+                    height: parseFloat(document.getElementById('height').value)
+                },
+                chaos: {
+                    noiseScale: noiseScaleMultiplier,
+                    turbulence: turbulence,
+                    octaves: octaves,
+                    lacunarity: lacunarity,
+                    meshIntensity: meshIntensity
+                },
+                blend: {
+                    colorBlendMode: colorBlendMode,
+                    blendStrength: blendStrength,
+                    cssBlendMode: document.getElementById('blendMode').value
+                },
+                effects: {
+                    blur: parseFloat(document.getElementById('blur').value),
+                    backgroundColor: document.getElementById('bgColor').value
+                }
+            };
+            return JSON.stringify(settings, null, 2);
+        }
+
+        // Import settings
+        function importSettings(jsonString) {
+            try {
+                const settings = JSON.parse(jsonString);
+
+                // Colors
+                if (settings.colors) {
+                    [1, 2, 3, 4].forEach(i => {
+                        const colorData = settings.colors[`color${i}`];
+                        if (colorData) {
+                            document.getElementById(`color${i}`).value = colorData.hex;
+                            document.getElementById(`alpha${i}`).value = colorData.alpha;
+                            document.getElementById(`alpha${i}Value`).textContent = Math.round(colorData.alpha * 100) + '%';
+                            const rgb = hexToRgb(colorData.hex);
+                            currentColors[`color${i}`] = { ...rgb, a: colorData.alpha };
+                        }
+                    });
+                }
+
+                // Animation
+                if (settings.animation) {
+                    if (settings.animation.speed !== undefined) {
+                        animationSpeed = settings.animation.speed;
+                        document.getElementById('speed').value = animationSpeed;
+                        document.getElementById('speedValue').textContent = animationSpeed.toFixed(1) + 'x';
+                    }
+                    if (settings.animation.angle !== undefined) {
+                        document.getElementById('angle').value = settings.animation.angle;
+                        document.getElementById('angleValue').textContent = settings.animation.angle + '°';
+                        stripeContainer.style.transform = `translateY(-50%) skewY(${settings.animation.angle}deg)`;
+                    }
+                    if (settings.animation.height !== undefined) {
+                        document.getElementById('height').value = settings.animation.height;
+                        document.getElementById('heightValue').textContent = settings.animation.height + 'px';
+                        stripeContainer.style.height = settings.animation.height + 'px';
+                    }
+                }
+
+                // Chaos
+                if (settings.chaos) {
+                    if (settings.chaos.noiseScale !== undefined) {
+                        noiseScaleMultiplier = settings.chaos.noiseScale;
+                        document.getElementById('noiseScale').value = noiseScaleMultiplier;
+                        document.getElementById('scaleValue').textContent = noiseScaleMultiplier.toFixed(1) + 'x';
+                    }
+                    if (settings.chaos.turbulence !== undefined) {
+                        turbulence = settings.chaos.turbulence;
+                        document.getElementById('turbulence').value = turbulence;
+                        document.getElementById('turbulenceValue').textContent = turbulence.toFixed(2);
+                    }
+                    if (settings.chaos.octaves !== undefined) {
+                        octaves = settings.chaos.octaves;
+                        document.getElementById('octaves').value = octaves;
+                        document.getElementById('octavesValue').textContent = octaves;
+                    }
+                    if (settings.chaos.lacunarity !== undefined) {
+                        lacunarity = settings.chaos.lacunarity;
+                        document.getElementById('lacunarity').value = lacunarity;
+                        document.getElementById('lacunarityValue').textContent = lacunarity.toFixed(1);
+                    }
+                    if (settings.chaos.meshIntensity !== undefined) {
+                        meshIntensity = settings.chaos.meshIntensity;
+                        document.getElementById('mesh').value = meshIntensity;
+                        document.getElementById('meshValue').textContent = meshIntensity.toFixed(2);
+                    }
+                }
+
+                // Blend
+                if (settings.blend) {
+                    if (settings.blend.colorBlendMode !== undefined) {
+                        colorBlendMode = settings.blend.colorBlendMode;
+                        document.getElementById('colorBlendMode').value = colorBlendMode;
+                    }
+                    if (settings.blend.blendStrength !== undefined) {
+                        blendStrength = settings.blend.blendStrength;
+                        document.getElementById('blendStrength').value = blendStrength;
+                        document.getElementById('blendStrengthValue').textContent = blendStrength.toFixed(2);
+                    }
+                    if (settings.blend.cssBlendMode) {
+                        document.getElementById('blendMode').value = settings.blend.cssBlendMode;
+                        canvas.style.mixBlendMode = settings.blend.cssBlendMode;
+                    }
+                }
+
+                // Effects
+                if (settings.effects) {
+                    if (settings.effects.blur !== undefined) {
+                        document.getElementById('blur').value = settings.effects.blur;
+                        document.getElementById('blurValue').textContent = settings.effects.blur + 'px';
+                        canvas.style.filter = settings.effects.blur > 0 ? `blur(${settings.effects.blur}px)` : 'none';
+                    }
+                    if (settings.effects.backgroundColor) {
+                        document.getElementById('bgColor').value = settings.effects.backgroundColor;
+                        heroSection.style.background = settings.effects.backgroundColor;
+                        stripeContainer.style.background = settings.effects.backgroundColor;
+                    }
+                }
+
+                return true;
+            } catch (e) {
+                console.error('Import error:', e);
+                return false;
+            }
+        }
+
+        // Export button
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            const json = exportSettings();
+            navigator.clipboard.writeText(json).then(() => {
+                document.getElementById('jsonTextarea').value = json;
+                showToast('📋 Settings copied to clipboard!', 'success');
+            }).catch(() => {
+                document.getElementById('jsonTextarea').value = json;
+                showToast('Settings exported - please copy manually', 'success');
+            });
+        });
+
+        // Import button
+        document.getElementById('importBtn').addEventListener('click', () => {
+            const json = document.getElementById('jsonTextarea').value.trim();
+            if (!json) {
+                showToast('❌ Please paste JSON first', 'error');
+                return;
+            }
+            if (importSettings(json)) {
+                showToast('✅ Settings imported successfully!', 'success');
+            } else {
+                showToast('❌ Invalid JSON format', 'error');
+            }
         });
 
         if (!gl) {
