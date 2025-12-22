@@ -267,6 +267,28 @@
         .pause-btn.paused {
             background: #ff6b6b;
         }
+
+        .setting-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e3e8ee;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .setting-group select:hover {
+            border-color: #635bff;
+        }
+
+        .setting-group select:focus {
+            outline: none;
+            border-color: #635bff;
+            box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.1);
+        }
     </style>
 </head>
 
@@ -356,8 +378,54 @@
         </div>
 
         <div class="setting-group">
+            <label>🌈 Color Blend Mode</label>
+            <select id="colorBlendMode">
+                <option value="0">Normal (Mix)</option>
+                <option value="1">Multiply</option>
+                <option value="2">Screen</option>
+                <option value="3">Overlay</option>
+                <option value="4">Soft Light</option>
+                <option value="5">Hard Light</option>
+                <option value="6">Color Dodge</option>
+                <option value="7">Color Burn</option>
+            </select>
+        </div>
+
+        <div class="setting-group">
+            <label>Blend Strength <span class="setting-value" id="blendStrengthValue">1.0</span></label>
+            <input type="range" id="blendStrength" min="0" max="1" step="0.05" value="1">
+        </div>
+
+        <div class="setting-group">
             <label>Blur Amount <span class="setting-value" id="blurValue">0px</span></label>
             <input type="range" id="blur" min="0" max="100" step="5" value="0">
+        </div>
+
+        <div class="setting-group">
+            <label>🎨 Mix Blend Mode</label>
+            <select id="blendMode">
+                <option value="normal">Normal</option>
+                <option value="multiply">Multiply</option>
+                <option value="screen">Screen</option>
+                <option value="overlay">Overlay</option>
+                <option value="darken">Darken</option>
+                <option value="lighten">Lighten</option>
+                <option value="color-dodge">Color Dodge</option>
+                <option value="color-burn">Color Burn</option>
+                <option value="hard-light">Hard Light</option>
+                <option value="soft-light">Soft Light</option>
+                <option value="difference">Difference</option>
+                <option value="exclusion">Exclusion</option>
+                <option value="hue">Hue</option>
+                <option value="saturation">Saturation</option>
+                <option value="color">Color</option>
+                <option value="luminosity">Luminosity</option>
+            </select>
+        </div>
+
+        <div class="setting-group">
+            <label>Background Color</label>
+            <input type="color" id="bgColor" value="#f6f9fc">
         </div>
 
         <div class="setting-group">
@@ -388,6 +456,8 @@
         let octaves = 3;
         let lacunarity = 2.0;
         let meshIntensity = 0.3;
+        let colorBlendMode = 0;
+        let blendStrength = 1.0;
         let currentColors = {
             color1: { r: 0.114, g: 0.796, b: 0.365 },
             color2: { r: 1.0, g: 0.898, b: 0.369 },
@@ -545,6 +615,34 @@
             meshValueEl.textContent = meshIntensity.toFixed(2);
         });
 
+        // Color blend mode control (shader internal)
+        const colorBlendModeSelect = document.getElementById('colorBlendMode');
+        colorBlendModeSelect.addEventListener('change', (e) => {
+            colorBlendMode = parseInt(e.target.value);
+        });
+
+        // Blend strength control
+        const blendStrengthSlider = document.getElementById('blendStrength');
+        const blendStrengthValueEl = document.getElementById('blendStrengthValue');
+        blendStrengthSlider.addEventListener('input', (e) => {
+            blendStrength = parseFloat(e.target.value);
+            blendStrengthValueEl.textContent = blendStrength.toFixed(2);
+        });
+
+        // Blend mode control
+        const blendModeSelect = document.getElementById('blendMode');
+        const heroSection = document.querySelector('.hero-section');
+        blendModeSelect.addEventListener('change', (e) => {
+            canvas.style.mixBlendMode = e.target.value;
+        });
+
+        // Background color control
+        const bgColorPicker = document.getElementById('bgColor');
+        bgColorPicker.addEventListener('input', (e) => {
+            heroSection.style.background = e.target.value;
+            stripeContainer.style.background = e.target.value;
+        });
+
         // Pause button
         const pauseBtn = document.getElementById('pauseBtn');
         pauseBtn.addEventListener('click', () => {
@@ -580,6 +678,66 @@
             uniform float u_octaves;
             uniform float u_lacunarity;
             uniform float u_meshIntensity;
+            uniform float u_colorBlendMode;
+            uniform float u_blendStrength;
+
+            // Blend mode functions
+            vec3 blendMultiply(vec3 base, vec3 blend) {
+                return base * blend;
+            }
+            
+            vec3 blendScreen(vec3 base, vec3 blend) {
+                return 1.0 - (1.0 - base) * (1.0 - blend);
+            }
+            
+            vec3 blendOverlay(vec3 base, vec3 blend) {
+                return vec3(
+                    base.r < 0.5 ? 2.0 * base.r * blend.r : 1.0 - 2.0 * (1.0 - base.r) * (1.0 - blend.r),
+                    base.g < 0.5 ? 2.0 * base.g * blend.g : 1.0 - 2.0 * (1.0 - base.g) * (1.0 - blend.g),
+                    base.b < 0.5 ? 2.0 * base.b * blend.b : 1.0 - 2.0 * (1.0 - base.b) * (1.0 - blend.b)
+                );
+            }
+            
+            vec3 blendSoftLight(vec3 base, vec3 blend) {
+                return vec3(
+                    blend.r < 0.5 ? base.r - (1.0 - 2.0 * blend.r) * base.r * (1.0 - base.r) : base.r + (2.0 * blend.r - 1.0) * (sqrt(base.r) - base.r),
+                    blend.g < 0.5 ? base.g - (1.0 - 2.0 * blend.g) * base.g * (1.0 - base.g) : base.g + (2.0 * blend.g - 1.0) * (sqrt(base.g) - base.g),
+                    blend.b < 0.5 ? base.b - (1.0 - 2.0 * blend.b) * base.b * (1.0 - base.b) : base.b + (2.0 * blend.b - 1.0) * (sqrt(base.b) - base.b)
+                );
+            }
+            
+            vec3 blendHardLight(vec3 base, vec3 blend) {
+                return blendOverlay(blend, base);
+            }
+            
+            vec3 blendColorDodge(vec3 base, vec3 blend) {
+                return vec3(
+                    blend.r >= 1.0 ? 1.0 : min(1.0, base.r / (1.0 - blend.r)),
+                    blend.g >= 1.0 ? 1.0 : min(1.0, base.g / (1.0 - blend.g)),
+                    blend.b >= 1.0 ? 1.0 : min(1.0, base.b / (1.0 - blend.b))
+                );
+            }
+            
+            vec3 blendColorBurn(vec3 base, vec3 blend) {
+                return vec3(
+                    blend.r <= 0.0 ? 0.0 : max(0.0, 1.0 - (1.0 - base.r) / blend.r),
+                    blend.g <= 0.0 ? 0.0 : max(0.0, 1.0 - (1.0 - base.g) / blend.g),
+                    blend.b <= 0.0 ? 0.0 : max(0.0, 1.0 - (1.0 - base.b) / blend.b)
+                );
+            }
+            
+            vec3 applyBlendMode(vec3 base, vec3 blend, float mode) {
+                vec3 result;
+                if (mode < 0.5) result = mix(base, blend, 0.5); // Normal
+                else if (mode < 1.5) result = blendMultiply(base, blend);
+                else if (mode < 2.5) result = blendScreen(base, blend);
+                else if (mode < 3.5) result = blendOverlay(base, blend);
+                else if (mode < 4.5) result = blendSoftLight(base, blend);
+                else if (mode < 5.5) result = blendHardLight(base, blend);
+                else if (mode < 6.5) result = blendColorDodge(base, blend);
+                else result = blendColorBurn(base, blend);
+                return result;
+            }
 
             // 3D Simplex noise
             vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -652,12 +810,21 @@
                 t = smoothstep(0.0, 1.0, t); // Smooth interpolation
                 
                 vec3 finalColor;
+                vec3 blendedColor;
+                float mixFactor;
+                
                 if (t < 0.33) {
-                    finalColor = mix(u_color1, u_color2, smoothstep(0.0, 0.33, t) * 3.0);
+                    mixFactor = smoothstep(0.0, 0.33, t) * 3.0;
+                    blendedColor = applyBlendMode(u_color1, u_color2, u_colorBlendMode);
+                    finalColor = mix(u_color1, mix(u_color2, blendedColor, u_blendStrength), mixFactor);
                 } else if (t < 0.66) {
-                    finalColor = mix(u_color2, u_color3, smoothstep(0.33, 0.66, t) * 3.0);
+                    mixFactor = (t - 0.33) / 0.33;
+                    blendedColor = applyBlendMode(u_color2, u_color3, u_colorBlendMode);
+                    finalColor = mix(u_color2, mix(u_color3, blendedColor, u_blendStrength), mixFactor);
                 } else {
-                    finalColor = mix(u_color3, u_color4, smoothstep(0.66, 1.0, t) * 3.0);
+                    mixFactor = (t - 0.66) / 0.34;
+                    blendedColor = applyBlendMode(u_color3, u_color4, u_colorBlendMode);
+                    finalColor = mix(u_color3, mix(u_color4, blendedColor, u_blendStrength), mixFactor);
                 }
                 
                 gl_FragColor = vec4(finalColor, 1.0);
@@ -717,6 +884,8 @@
         const octavesLocation = gl.getUniformLocation(program, 'u_octaves');
         const lacunarityLocation = gl.getUniformLocation(program, 'u_lacunarity');
         const meshIntensityLocation = gl.getUniformLocation(program, 'u_meshIntensity');
+        const colorBlendModeLocation = gl.getUniformLocation(program, 'u_colorBlendMode');
+        const blendStrengthLocation = gl.getUniformLocation(program, 'u_blendStrength');
 
         let time = 0;
         const container = document.querySelector('.gradient-stripe-container');
@@ -750,6 +919,8 @@
             gl.uniform1f(octavesLocation, octaves);
             gl.uniform1f(lacunarityLocation, lacunarity);
             gl.uniform1f(meshIntensityLocation, meshIntensity);
+            gl.uniform1f(colorBlendModeLocation, colorBlendMode);
+            gl.uniform1f(blendStrengthLocation, blendStrength);
 
             // Set up position attribute
             gl.enableVertexAttribArray(positionLocation);

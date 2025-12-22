@@ -23,6 +23,14 @@ A recreation of Stripe's animated mesh gradient stripe with an interactive setti
 - **Lacunarity**: Frequency scaling between layers (1.0-4.0)
 - **Mesh Intensity**: Blend with sinusoidal pattern (0.0-1.0)
 
+### 🎨 Visual Effects
+- **Mix Blend Mode**: 16 CSS blend modes (Normal, Multiply, Screen, Overlay, etc.)
+- **Background Color**: Custom background to see blend effects
+
+### 🌈 Internal Color Blending
+- **Color Blend Mode**: 8 shader blend modes (Normal, Multiply, Screen, Overlay, Soft Light, Hard Light, Color Dodge, Color Burn)
+- **Blend Strength**: Controls intensity of color blending effect (0.0-1.0)
+
 ### ⚡ Performance
 - WebGL-powered GLSL shaders for GPU acceleration
 - 3-layer Simplex noise for organic movement
