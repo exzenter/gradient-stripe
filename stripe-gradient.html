@@ -63,6 +63,7 @@
             font-weight: 700;
             margin-bottom: 1.5rem;
             letter-spacing: -0.03em;
+            color: #ffffff;
         }
 
         p {
@@ -330,6 +331,31 @@
         </div>
 
         <div class="setting-group">
+            <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">🌀 Chaos Settings <span
+                    style="font-size: 0.8rem; opacity: 0.6;">▼</span></label>
+        </div>
+
+        <div class="setting-group">
+            <label>Turbulence <span class="setting-value" id="turbulenceValue">0.7</span></label>
+            <input type="range" id="turbulence" min="0" max="1" step="0.05" value="0.7">
+        </div>
+
+        <div class="setting-group">
+            <label>Octaves (Detail) <span class="setting-value" id="octavesValue">3</span></label>
+            <input type="range" id="octaves" min="1" max="5" step="1" value="3">
+        </div>
+
+        <div class="setting-group">
+            <label>Lacunarity <span class="setting-value" id="lacunarityValue">2.0</span></label>
+            <input type="range" id="lacunarity" min="1" max="4" step="0.1" value="2">
+        </div>
+
+        <div class="setting-group">
+            <label>Mesh Intensity <span class="setting-value" id="meshValue">0.3</span></label>
+            <input type="range" id="mesh" min="0" max="1" step="0.05" value="0.3">
+        </div>
+
+        <div class="setting-group">
             <label>Blur Amount <span class="setting-value" id="blurValue">0px</span></label>
             <input type="range" id="blur" min="0" max="100" step="5" value="0">
         </div>
@@ -358,6 +384,10 @@
         let animationSpeed = 1.0;
         let noiseScaleMultiplier = 1.0;
         let isPaused = false;
+        let turbulence = 0.7;
+        let octaves = 3;
+        let lacunarity = 2.0;
+        let meshIntensity = 0.3;
         let currentColors = {
             color1: { r: 0.114, g: 0.796, b: 0.365 },
             color2: { r: 1.0, g: 0.898, b: 0.369 },
@@ -486,6 +516,35 @@
             canvas.style.filter = blur > 0 ? `blur(${blur}px)` : 'none';
         });
 
+        // Chaos controls
+        const turbulenceSlider = document.getElementById('turbulence');
+        const turbulenceValueEl = document.getElementById('turbulenceValue');
+        turbulenceSlider.addEventListener('input', (e) => {
+            turbulence = parseFloat(e.target.value);
+            turbulenceValueEl.textContent = turbulence.toFixed(2);
+        });
+
+        const octavesSlider = document.getElementById('octaves');
+        const octavesValueEl = document.getElementById('octavesValue');
+        octavesSlider.addEventListener('input', (e) => {
+            octaves = parseInt(e.target.value);
+            octavesValueEl.textContent = octaves;
+        });
+
+        const lacunaritySlider = document.getElementById('lacunarity');
+        const lacunarityValueEl = document.getElementById('lacunarityValue');
+        lacunaritySlider.addEventListener('input', (e) => {
+            lacunarity = parseFloat(e.target.value);
+            lacunarityValueEl.textContent = lacunarity.toFixed(1);
+        });
+
+        const meshSlider = document.getElementById('mesh');
+        const meshValueEl = document.getElementById('meshValue');
+        meshSlider.addEventListener('input', (e) => {
+            meshIntensity = parseFloat(e.target.value);
+            meshValueEl.textContent = meshIntensity.toFixed(2);
+        });
+
         // Pause button
         const pauseBtn = document.getElementById('pauseBtn');
         pauseBtn.addEventListener('click', () => {
@@ -517,6 +576,10 @@
             uniform vec3 u_color3;
             uniform vec3 u_color4;
             uniform float u_noiseScale;
+            uniform float u_turbulence;
+            uniform float u_octaves;
+            uniform float u_lacunarity;
+            uniform float u_meshIntensity;
 
             // 3D Simplex noise
             vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -551,28 +614,38 @@
                 return 130.0 * dot(m, g);
             }
 
+            // Fractal Brownian Motion for configurable chaos
+            float fbm(vec2 p, float time) {
+                float value = 0.0;
+                float amplitude = 0.5;
+                float frequency = 1.0;
+                float timeScale = 0.0004;
+                
+                for (int i = 0; i < 5; i++) {
+                    if (float(i) >= u_octaves) break;
+                    value += amplitude * snoise(p * frequency + vec2(time * timeScale * (0.5 + float(i) * 0.2), time * timeScale * (0.3 - float(i) * 0.1)));
+                    amplitude *= u_turbulence;
+                    frequency *= u_lacunarity;
+                }
+                return value;
+            }
+
             void main() {
                 vec2 uv = gl_FragCoord.xy / u_resolution.xy;
                 vec2 pos = gl_FragCoord.xy;
                 
-                // Create flowing mesh gradient effect
+                // Create flowing mesh gradient effect with configurable chaos
                 float scale = 0.0015 / u_noiseScale;
-                float timeScale = 0.0004;
                 
-                // Multiple layers of noise for organic movement
-                float noise1 = snoise(pos * scale + vec2(u_time * timeScale * 0.7, u_time * timeScale * 0.3));
-                float noise2 = snoise(pos * scale * 2.3 + vec2(-u_time * timeScale * 0.5, u_time * timeScale * 0.8));
-                float noise3 = snoise(pos * scale * 0.6 + vec2(u_time * timeScale * 0.4, -u_time * timeScale * 0.6));
+                // Use fractal noise for more chaos control
+                float combinedNoise = fbm(pos * scale, u_time);
                 
-                // Combine noise layers
-                float combinedNoise = noise1 * 0.5 + noise2 * 0.3 + noise3 * 0.2;
-                
-                // Create mesh points that move
+                // Create mesh points that move (controllable intensity)
                 vec2 meshFreq = vec2(3.0, 2.0);
                 float meshNoise = sin(uv.x * meshFreq.x + u_time * 0.001) * 
                                   cos(uv.y * meshFreq.y - u_time * 0.0008);
                 
-                combinedNoise = combinedNoise * 0.7 + meshNoise * 0.3;
+                combinedNoise = combinedNoise * (1.0 - u_meshIntensity) + meshNoise * u_meshIntensity;
                 
                 // Map noise to colors with smooth transitions
                 float t = (combinedNoise + 1.0) * 0.5; // Normalize to 0-1
@@ -640,6 +713,10 @@
         const color3Location = gl.getUniformLocation(program, 'u_color3');
         const color4Location = gl.getUniformLocation(program, 'u_color4');
         const noiseScaleLocation = gl.getUniformLocation(program, 'u_noiseScale');
+        const turbulenceLocation = gl.getUniformLocation(program, 'u_turbulence');
+        const octavesLocation = gl.getUniformLocation(program, 'u_octaves');
+        const lacunarityLocation = gl.getUniformLocation(program, 'u_lacunarity');
+        const meshIntensityLocation = gl.getUniformLocation(program, 'u_meshIntensity');
 
         let time = 0;
         const container = document.querySelector('.gradient-stripe-container');
@@ -669,6 +746,10 @@
             gl.uniform3f(color3Location, currentColors.color3.r, currentColors.color3.g, currentColors.color3.b);
             gl.uniform3f(color4Location, currentColors.color4.r, currentColors.color4.g, currentColors.color4.b);
             gl.uniform1f(noiseScaleLocation, noiseScaleMultiplier);
+            gl.uniform1f(turbulenceLocation, turbulence);
+            gl.uniform1f(octavesLocation, octaves);
+            gl.uniform1f(lacunarityLocation, lacunarity);
+            gl.uniform1f(meshIntensityLocation, meshIntensity);
 
             // Set up position attribute
             gl.enableVertexAttribArray(positionLocation);

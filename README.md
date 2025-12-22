@@ -17,6 +17,12 @@ A recreation of Stripe's animated mesh gradient stripe with an interactive setti
 - **Blur Amount**: 0px to 100px
 - **Pause/Resume**: Animation control
 
+### 🌀 Advanced Chaos Controls
+- **Turbulence**: Controls amplitude decay per octave (0.0-1.0)
+- **Octaves (Detail)**: 1-5 layers of noise for complexity
+- **Lacunarity**: Frequency scaling between layers (1.0-4.0)
+- **Mesh Intensity**: Blend with sinusoidal pattern (0.0-1.0)
+
 ### ⚡ Performance
 - WebGL-powered GLSL shaders for GPU acceleration
 - 3-layer Simplex noise for organic movement
