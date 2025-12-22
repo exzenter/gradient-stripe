@@ -7,6 +7,8 @@
     position: relative;
     overflow: hidden;
     min-height: 100px;
+    padding: 0;
+    /* Ensure no default padding shrinks the gradient area */
 }
 
 /* Allow gradient to overflow block boundaries - but keep wrapper z-index neutral to not hide text */

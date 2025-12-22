@@ -7,6 +7,7 @@
     position: relative;
     overflow: hidden;
     min-height: 200px;
+    padding: 0;
 }
 
 /* Gradient container - positioned behind content */
