@@ -59,6 +59,10 @@
             "type": "boolean",
             "default": false
         },
+        "stripeOverflow": {
+            "type": "boolean",
+            "default": false
+        },
         "minHeight": {
             "type": "string",
             "default": ""
@@ -67,33 +71,17 @@
             "type": "string",
             "default": "#1dcb5d"
         },
-        "alpha1": {
-            "type": "number",
-            "default": 1
-        },
         "color2": {
             "type": "string",
             "default": "#ffe85e"
-        },
-        "alpha2": {
-            "type": "number",
-            "default": 1
         },
         "color3": {
             "type": "string",
             "default": "#ffa832"
         },
-        "alpha3": {
-            "type": "number",
-            "default": 1
-        },
         "color4": {
             "type": "string",
             "default": "#ffce48"
-        },
-        "alpha4": {
-            "type": "number",
-            "default": 1
         },
         "animationSpeed": {
             "type": "number",
@@ -106,6 +94,14 @@
         "stripeHeight": {
             "type": "number",
             "default": 250
+        },
+        "stripeTranslateX": {
+            "type": "number",
+            "default": 0
+        },
+        "stripeTranslateY": {
+            "type": "number",
+            "default": 0
         },
         "noiseScale": {
             "type": "number",
@@ -138,6 +134,10 @@
         "blur": {
             "type": "number",
             "default": 0
+        },
+        "blurIsolation": {
+            "type": "boolean",
+            "default": false
         },
         "importExportJson": {
             "type": "string",

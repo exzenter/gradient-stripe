@@ -15,9 +15,13 @@
     top: 0;
     left: 0;
     width: 100%;
-    z-index: 0;
-    pointer-events: none;
+    z-index: -1;
+    pointer-events: none !important;
     background: linear-gradient(135deg, #1dcb5d 0%, #ffe85e 50%, #ffa832 100%);
+}
+
+.gsb-blur-isolated .gsb-gradient-stripe-container {
+    overflow: hidden;
 }
 
 /* Background mode - full coverage */

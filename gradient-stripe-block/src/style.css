@@ -6,6 +6,12 @@
 .wp-block-gsb-gradient-stripe {
     position: relative;
     overflow: hidden;
+    min-height: 100px;
+}
+
+/* Allow gradient to overflow block boundaries - but keep wrapper z-index neutral to not hide text */
+.wp-block-gsb-gradient-stripe.gsb-overflow-visible {
+    overflow: visible;
 }
 
 /* Gradient container - positioned behind content */
@@ -14,9 +20,28 @@
     top: 0;
     left: 0;
     width: 100%;
-    z-index: 0;
-    pointer-events: none;
+    height: 100%;
+    /* Ensure coverage */
+    z-index: -1;
+    /* Always behind content */
+    /* Never block clicks */
 }
+
+/* Blur isolation to prevent bleeding AND clip edges */
+.gsb-blur-isolated {
+    isolation: isolate;
+}
+
+.gsb-blur-isolated .gsb-gradient-stripe-container {
+    overflow: hidden;
+}
+
+/* Ensure canvas also passes through events */
+.gsb-gradient-canvas {
+    pointer-events: none !important;
+}
+
+
 
 /* Background mode - full coverage */
 .gsb-background-mode {
@@ -44,11 +69,26 @@
 }
 
 /* Alignments */
-.wp-block-gsb-gradient-stripe.alignwide,
-.wp-block-gsb-gradient-stripe.alignfull {
+.wp-block-gsb-gradient-stripe.alignwide {
     width: 100%;
+    max-width: none;
 }
 
+/* Full width - only set width, let WordPress handle margins */
 .wp-block-gsb-gradient-stripe.alignfull {
-    max-width: none;
+    max-width: 100vw;
+}
+
+/* Only apply negative margins if no custom margin is set */
+.wp-block-gsb-gradient-stripe.alignfull:not([style*="margin"]) {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+}
+
+/* Gradient container fills parent */
+.wp-block-gsb-gradient-stripe.alignfull>.gsb-gradient-stripe-container {
+    left: 0;
+    right: 0;
+    width: 100%;
 }

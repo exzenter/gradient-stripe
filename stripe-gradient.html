@@ -386,30 +386,6 @@
         .toast.error {
             background: #ef4444;
         }
-
-        .color-with-alpha {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .color-with-alpha input[type="color"] {
-            flex: 1;
-            height: 36px;
-        }
-
-        .color-with-alpha input[type="range"] {
-            width: 60px;
-            height: 6px;
-        }
-
-        .alpha-value {
-            font-size: 0.75rem;
-            color: #635bff;
-            font-weight: 600;
-            min-width: 35px;
-            text-align: right;
-        }
     </style>
 </head>
 
@@ -432,46 +408,30 @@
         </div>
 
         <div class="setting-group">
-            <label>Custom Colors (with Alpha)</label>
+            <label>Custom Colors</label>
             <div class="color-inputs">
                 <div>
                     <label style="font-size: 0.8rem;">Color 1</label>
-                    <div class="color-with-alpha">
-                        <input type="color" id="color1" value="#1dcb5d">
-                        <input type="range" id="alpha1" min="0" max="1" step="0.05" value="1">
-                        <span class="alpha-value" id="alpha1Value">100%</span>
-                    </div>
+                    <input type="color" id="color1" value="#1dcb5d">
                 </div>
                 <div>
                     <label style="font-size: 0.8rem;">Color 2</label>
-                    <div class="color-with-alpha">
-                        <input type="color" id="color2" value="#ffe85e">
-                        <input type="range" id="alpha2" min="0" max="1" step="0.05" value="1">
-                        <span class="alpha-value" id="alpha2Value">100%</span>
-                    </div>
+                    <input type="color" id="color2" value="#ffe85e">
                 </div>
                 <div>
                     <label style="font-size: 0.8rem;">Color 3</label>
-                    <div class="color-with-alpha">
-                        <input type="color" id="color3" value="#ffa832">
-                        <input type="range" id="alpha3" min="0" max="1" step="0.05" value="1">
-                        <span class="alpha-value" id="alpha3Value">100%</span>
-                    </div>
+                    <input type="color" id="color3" value="#ffa832">
                 </div>
                 <div>
                     <label style="font-size: 0.8rem;">Color 4</label>
-                    <div class="color-with-alpha">
-                        <input type="color" id="color4" value="#ffce48">
-                        <input type="range" id="alpha4" min="0" max="1" step="0.05" value="1">
-                        <span class="alpha-value" id="alpha4Value">100%</span>
-                    </div>
+                    <input type="color" id="color4" value="#ffce48">
                 </div>
             </div>
         </div>
 
         <div class="setting-group">
             <label>Animation Speed <span class="setting-value" id="speedValue">1.0x</span></label>
-            <input type="range" id="speed" min="0" max="3" step="0.1" value="1">
+            <input type="range" id="speed" min="0" max="25" step="0.1" value="1">
         </div>
 
         <div class="setting-group">
@@ -605,10 +565,10 @@
         let colorBlendMode = 0;
         let blendStrength = 1.0;
         let currentColors = {
-            color1: { r: 0.114, g: 0.796, b: 0.365, a: 1.0 },
-            color2: { r: 1.0, g: 0.898, b: 0.369, a: 1.0 },
-            color3: { r: 1.0, g: 0.659, b: 0.196, a: 1.0 },
-            color4: { r: 1.0, g: 0.808, b: 0.282, a: 1.0 }
+            color1: { r: 0.114, g: 0.796, b: 0.365 },
+            color2: { r: 1.0, g: 0.898, b: 0.369 },
+            color3: { r: 1.0, g: 0.659, b: 0.196 },
+            color4: { r: 1.0, g: 0.808, b: 0.282 }
         };
 
         // Color presets
@@ -675,16 +635,12 @@
             } : null;
         }
 
-        // Update colors (preserving alpha)
+        // Update colors
         function updateColors() {
-            const rgb1 = hexToRgb(document.getElementById('color1').value);
-            const rgb2 = hexToRgb(document.getElementById('color2').value);
-            const rgb3 = hexToRgb(document.getElementById('color3').value);
-            const rgb4 = hexToRgb(document.getElementById('color4').value);
-            currentColors.color1 = { ...rgb1, a: currentColors.color1.a };
-            currentColors.color2 = { ...rgb2, a: currentColors.color2.a };
-            currentColors.color3 = { ...rgb3, a: currentColors.color3.a };
-            currentColors.color4 = { ...rgb4, a: currentColors.color4.a };
+            currentColors.color1 = hexToRgb(document.getElementById('color1').value);
+            currentColors.color2 = hexToRgb(document.getElementById('color2').value);
+            currentColors.color3 = hexToRgb(document.getElementById('color3').value);
+            currentColors.color4 = hexToRgb(document.getElementById('color4').value);
         }
 
         // Color inputs
@@ -692,16 +648,7 @@
             document.getElementById(id).addEventListener('input', updateColors);
         });
 
-        // Alpha sliders
-        [1, 2, 3, 4].forEach(i => {
-            const alphaSlider = document.getElementById(`alpha${i}`);
-            const alphaValue = document.getElementById(`alpha${i}Value`);
-            alphaSlider.addEventListener('input', (e) => {
-                const alpha = parseFloat(e.target.value);
-                currentColors[`color${i}`].a = alpha;
-                alphaValue.textContent = Math.round(alpha * 100) + '%';
-            });
-        });
+
 
         // Speed control
         const speedSlider = document.getElementById('speed');

@@ -22,10 +22,6 @@
         uniform vec3 u_color2;
         uniform vec3 u_color3;
         uniform vec3 u_color4;
-        uniform float u_alpha1;
-        uniform float u_alpha2;
-        uniform float u_alpha3;
-        uniform float u_alpha4;
         uniform float u_noiseScale;
         uniform float u_turbulence;
         uniform float u_octaves;
@@ -203,10 +199,6 @@
         const color2 = hexToRgb(canvas.dataset.color2 || '#ffe85e');
         const color3 = hexToRgb(canvas.dataset.color3 || '#ffa832');
         const color4 = hexToRgb(canvas.dataset.color4 || '#ffce48');
-        const alpha1 = parseFloat(canvas.dataset.alpha1) || 1;
-        const alpha2 = parseFloat(canvas.dataset.alpha2) || 1;
-        const alpha3 = parseFloat(canvas.dataset.alpha3) || 1;
-        const alpha4 = parseFloat(canvas.dataset.alpha4) || 1;
         const speed = parseFloat(canvas.dataset.speed) || 1;
         const noiseScale = parseFloat(canvas.dataset.noiseScale) || 1;
         const turbulence = parseFloat(canvas.dataset.turbulence) || 0.7;
