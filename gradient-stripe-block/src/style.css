@@ -1,0 +1,22 @@
+/**
+ * Gradient Stripe Block - Frontend Styles
+ */
+.gsb-gradient-stripe-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: #f6f9fc;
+}
+
+.gsb-gradient-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Alignments */
+.wp-block-gsb-gradient-stripe.alignwide .gsb-gradient-stripe-container,
+.wp-block-gsb-gradient-stripe.alignfull .gsb-gradient-stripe-container {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
