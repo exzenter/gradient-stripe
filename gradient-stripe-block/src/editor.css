@@ -1,28 +1,52 @@
 /**
  * Gradient Stripe Block - Editor Styles
  */
-.gsb-gradient-stripe-container {
+
+/* Container block in editor */
+.wp-block-gsb-gradient-stripe {
     position: relative;
-    width: 100%;
     overflow: hidden;
-    background: #f6f9fc;
+    min-height: 200px;
 }
 
+/* Gradient container - positioned behind content */
+.gsb-gradient-stripe-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(135deg, #1dcb5d 0%, #ffe85e 50%, #ffa832 100%);
+}
+
+/* Background mode - full coverage */
+.gsb-background-mode {
+    height: 100% !important;
+    transform: none !important;
+}
+
+/* Stripe mode - diagonal stripe */
+.gsb-stripe-mode {
+    top: 50%;
+    transform-origin: center;
+}
+
+/* Canvas fills container */
 .gsb-gradient-canvas {
     width: 100%;
     height: 100%;
     display: block;
 }
 
+/* Content layer - on top of gradient */
+.gsb-gradient-content {
+    position: relative;
+    z-index: 1;
+    min-height: 100px;
+}
+
+/* Remove old preview overlay */
 .gsb-preview-overlay {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(255, 255, 255, 0.9);
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: 600;
-    color: #0a2540;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: none;
 }

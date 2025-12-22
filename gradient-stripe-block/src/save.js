@@ -1,25 +1,32 @@
 /**
  * Gradient Stripe Block - Save Component
  */
-import { useBlockProps } from '@wordpress/block-editor';
+import { useBlockProps, InnerBlocks } from '@wordpress/block-editor';
 
 export default function save({ attributes }) {
     const {
+        stripeMode, minHeight, tagName,
         color1, alpha1, color2, alpha2, color3, alpha3, color4, alpha4,
         animationSpeed, stripeAngle, stripeHeight,
         noiseScale, turbulence, octaves, lacunarity, meshIntensity,
         colorBlendMode, blendStrength, blur
     } = attributes;
 
-    const blockProps = useBlockProps.save();
+    const TagName = tagName || 'div';
+
+    const blockProps = useBlockProps.save({
+        style: {
+            minHeight: minHeight || undefined,
+        },
+    });
 
     return (
-        <div {...blockProps}>
+        <TagName {...blockProps}>
             <div
-                className="gsb-gradient-stripe-container"
+                className={`gsb-gradient-stripe-container ${stripeMode ? 'gsb-stripe-mode' : 'gsb-background-mode'}`}
                 style={{
-                    height: `${stripeHeight}px`,
-                    transform: `skewY(${stripeAngle}deg)`,
+                    height: stripeMode ? `${stripeHeight}px` : '100%',
+                    transform: stripeMode ? `skewY(${stripeAngle}deg)` : 'none',
                 }}
             >
                 <canvas
@@ -46,6 +53,9 @@ export default function save({ attributes }) {
                     }}
                 ></canvas>
             </div>
-        </div>
+            <div className="gsb-gradient-content">
+                <InnerBlocks.Content />
+            </div>
+        </TagName>
     );
 }

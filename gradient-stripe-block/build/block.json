@@ -2,17 +2,52 @@
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
   "name": "gsb/gradient-stripe",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "title": "Gradient Stripe",
   "category": "design",
   "icon": "art",
-  "description": "A beautiful animated mesh gradient stripe inspired by Stripe's design.",
+  "description": "A container block with animated mesh gradient background inspired by Stripe's design.",
   "supports": {
     "html": false,
     "align": [
       "wide",
       "full"
-    ]
+    ],
+    "anchor": true,
+    "className": true,
+    "color": {
+      "text": true,
+      "link": true,
+      "background": false
+    },
+    "spacing": {
+      "padding": true,
+      "margin": true,
+      "blockGap": true
+    },
+    "dimensions": {
+      "minHeight": true
+    },
+    "layout": {
+      "default": {
+        "type": "constrained"
+      },
+      "allowEditing": true,
+      "allowSizingOnChildren": true
+    },
+    "__experimentalBorder": {
+      "color": true,
+      "radius": true,
+      "style": true,
+      "width": true
+    },
+    "typography": {
+      "fontSize": true,
+      "lineHeight": true
+    },
+    "position": {
+      "sticky": true
+    }
   },
   "textdomain": "gradient-stripe-block",
   "editorScript": "file:./index.js",
@@ -20,6 +55,14 @@
   "style": "file:./style-index.css",
   "viewScript": "file:./frontend.js",
   "attributes": {
+    "stripeMode": {
+      "type": "boolean",
+      "default": false
+    },
+    "minHeight": {
+      "type": "string",
+      "default": ""
+    },
     "color1": {
       "type": "string",
       "default": "#1dcb5d"
@@ -99,6 +142,10 @@
     "importExportJson": {
       "type": "string",
       "default": ""
+    },
+    "tagName": {
+      "type": "string",
+      "default": "div"
     }
   }
 }

@@ -2,31 +2,38 @@
  * Gradient Stripe Block - Editor Component
  */
 import { __ } from '@wordpress/i18n';
-import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
+import {
+    useBlockProps,
+    InspectorControls,
+    InnerBlocks,
+    useInnerBlocksProps,
+} from '@wordpress/block-editor';
 import {
     PanelBody,
     RangeControl,
     SelectControl,
+    ToggleControl,
     ColorPicker,
     TextareaControl,
     Button,
+    __experimentalUnitControl as UnitControl,
     __experimentalHStack as HStack,
     __experimentalVStack as VStack,
     BaseControl,
 } from '@wordpress/components';
-import { useState, useEffect, useRef } from '@wordpress/element';
+import { useState, useRef } from '@wordpress/element';
 
 export default function Edit({ attributes, setAttributes }) {
     const {
+        stripeMode, minHeight, tagName,
         color1, alpha1, color2, alpha2, color3, alpha3, color4, alpha4,
         animationSpeed, stripeAngle, stripeHeight,
         noiseScale, turbulence, octaves, lacunarity, meshIntensity,
         colorBlendMode, blendStrength, blur, importExportJson
     } = attributes;
 
-    const blockProps = useBlockProps();
-    const canvasRef = useRef(null);
     const [toastMessage, setToastMessage] = useState('');
+    const TagName = tagName || 'div';
 
     // Color blend mode options
     const blendModeOptions = [
@@ -38,6 +45,17 @@ export default function Edit({ attributes, setAttributes }) {
         { label: 'Hard Light', value: 5 },
         { label: 'Color Dodge', value: 6 },
         { label: 'Color Burn', value: 7 },
+    ];
+
+    // HTML element options
+    const tagNameOptions = [
+        { label: 'Div', value: 'div' },
+        { label: 'Header', value: 'header' },
+        { label: 'Main', value: 'main' },
+        { label: 'Section', value: 'section' },
+        { label: 'Article', value: 'article' },
+        { label: 'Aside', value: 'aside' },
+        { label: 'Footer', value: 'footer' },
     ];
 
     // Export settings
@@ -52,7 +70,8 @@ export default function Edit({ attributes, setAttributes }) {
             animation: { speed: animationSpeed, angle: stripeAngle, height: stripeHeight },
             chaos: { noiseScale, turbulence, octaves, lacunarity, meshIntensity },
             blend: { colorBlendMode, blendStrength },
-            effects: { blur }
+            effects: { blur },
+            layout: { stripeMode, minHeight }
         };
         const json = JSON.stringify(settings, null, 2);
         setAttributes({ importExportJson: json });
@@ -69,22 +88,10 @@ export default function Edit({ attributes, setAttributes }) {
             const newAttrs = {};
 
             if (settings.colors) {
-                if (settings.colors.color1) {
-                    newAttrs.color1 = settings.colors.color1.hex;
-                    newAttrs.alpha1 = settings.colors.color1.alpha;
-                }
-                if (settings.colors.color2) {
-                    newAttrs.color2 = settings.colors.color2.hex;
-                    newAttrs.alpha2 = settings.colors.color2.alpha;
-                }
-                if (settings.colors.color3) {
-                    newAttrs.color3 = settings.colors.color3.hex;
-                    newAttrs.alpha3 = settings.colors.color3.alpha;
-                }
-                if (settings.colors.color4) {
-                    newAttrs.color4 = settings.colors.color4.hex;
-                    newAttrs.alpha4 = settings.colors.color4.alpha;
-                }
+                if (settings.colors.color1) { newAttrs.color1 = settings.colors.color1.hex; newAttrs.alpha1 = settings.colors.color1.alpha; }
+                if (settings.colors.color2) { newAttrs.color2 = settings.colors.color2.hex; newAttrs.alpha2 = settings.colors.color2.alpha; }
+                if (settings.colors.color3) { newAttrs.color3 = settings.colors.color3.hex; newAttrs.alpha3 = settings.colors.color3.alpha; }
+                if (settings.colors.color4) { newAttrs.color4 = settings.colors.color4.hex; newAttrs.alpha4 = settings.colors.color4.alpha; }
             }
             if (settings.animation) {
                 if (settings.animation.speed !== undefined) newAttrs.animationSpeed = settings.animation.speed;
@@ -105,6 +112,10 @@ export default function Edit({ attributes, setAttributes }) {
             if (settings.effects) {
                 if (settings.effects.blur !== undefined) newAttrs.blur = settings.effects.blur;
             }
+            if (settings.layout) {
+                if (settings.layout.stripeMode !== undefined) newAttrs.stripeMode = settings.layout.stripeMode;
+                if (settings.layout.minHeight !== undefined) newAttrs.minHeight = settings.layout.minHeight;
+            }
 
             setAttributes(newAttrs);
             setToastMessage('✅ Settings imported successfully!');
@@ -115,11 +126,67 @@ export default function Edit({ attributes, setAttributes }) {
         }
     };
 
+    // Block props with container styles
+    const blockProps = useBlockProps({
+        style: {
+            minHeight: minHeight || undefined,
+        },
+    });
+
+    // Inner blocks props
+    const innerBlocksProps = useInnerBlocksProps(
+        { className: 'gsb-gradient-content' },
+        {
+            renderAppender: InnerBlocks.DefaultBlockAppender,
+        }
+    );
+
     return (
         <>
             <InspectorControls>
+                {/* Layout Settings */}
+                <PanelBody title={__('Layout', 'gradient-stripe-block')} initialOpen={true}>
+                    <ToggleControl
+                        label={__('Stripe Mode', 'gradient-stripe-block')}
+                        help={stripeMode ? 'Diagonal stripe with skew transform' : 'Full background gradient'}
+                        checked={stripeMode}
+                        onChange={(value) => setAttributes({ stripeMode: value })}
+                    />
+                    <UnitControl
+                        label={__('Minimum Height', 'gradient-stripe-block')}
+                        value={minHeight}
+                        onChange={(value) => setAttributes({ minHeight: value })}
+                    />
+                    <SelectControl
+                        label={__('HTML Element', 'gradient-stripe-block')}
+                        value={tagName}
+                        options={tagNameOptions}
+                        onChange={(value) => setAttributes({ tagName: value })}
+                    />
+                    {stripeMode && (
+                        <>
+                            <RangeControl
+                                label="Stripe Angle"
+                                value={stripeAngle}
+                                onChange={(value) => setAttributes({ stripeAngle: value })}
+                                min={-30}
+                                max={30}
+                                step={1}
+                            />
+                            <RangeControl
+                                label="Stripe Height"
+                                value={stripeHeight}
+                                onChange={(value) => setAttributes({ stripeHeight: value })}
+                                min={100}
+                                max={500}
+                                step={10}
+                            />
+                        </>
+                    )}
+                </PanelBody>
+
                 {/* Color Settings */}
-                <PanelBody title={__('Colors', 'gradient-stripe-block')} initialOpen={true}>
+                <PanelBody title={__('Gradient Colors', 'gradient-stripe-block')} initialOpen={false}>
                     <VStack spacing={4}>
                         {[1, 2, 3, 4].map(i => (
                             <BaseControl key={i} label={`Color ${i}`}>
@@ -152,22 +219,6 @@ export default function Edit({ attributes, setAttributes }) {
                         min={0}
                         max={3}
                         step={0.1}
-                    />
-                    <RangeControl
-                        label="Stripe Angle"
-                        value={stripeAngle}
-                        onChange={(value) => setAttributes({ stripeAngle: value })}
-                        min={-30}
-                        max={30}
-                        step={1}
-                    />
-                    <RangeControl
-                        label="Stripe Height"
-                        value={stripeHeight}
-                        onChange={(value) => setAttributes({ stripeHeight: value })}
-                        min={100}
-                        max={500}
-                        step={10}
                     />
                 </PanelBody>
 
@@ -263,16 +314,15 @@ export default function Edit({ attributes, setAttributes }) {
                 </PanelBody>
             </InspectorControls>
 
-            <div {...blockProps}>
+            <TagName {...blockProps}>
                 <div
-                    className="gsb-gradient-stripe-container"
+                    className={`gsb-gradient-stripe-container ${stripeMode ? 'gsb-stripe-mode' : 'gsb-background-mode'}`}
                     style={{
-                        height: `${stripeHeight}px`,
-                        transform: `skewY(${stripeAngle}deg)`,
+                        height: stripeMode ? `${stripeHeight}px` : '100%',
+                        transform: stripeMode ? `skewY(${stripeAngle}deg)` : 'none',
                     }}
                 >
                     <canvas
-                        ref={canvasRef}
                         className="gsb-gradient-canvas"
                         data-color1={color1}
                         data-alpha1={alpha1}
@@ -295,11 +345,9 @@ export default function Edit({ attributes, setAttributes }) {
                             filter: blur > 0 ? `blur(${blur}px)` : 'none'
                         }}
                     ></canvas>
-                    <div className="gsb-preview-overlay">
-                        <span>🎨 Gradient Stripe Preview</span>
-                    </div>
                 </div>
-            </div>
+                <div {...innerBlocksProps} />
+            </TagName>
         </>
     );
 }
