@@ -2,7 +2,9 @@
 
 A recreation of Stripe's animated mesh gradient stripe with an interactive settings panel.
 
-![Gradient Stripe Demo](https://img.shields.io/badge/demo-live-brightgreen)
+**🚀 [Live Demo](https://exzenter.github.io/gradient-stripe/)**
+
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://exzenter.github.io/gradient-stripe/)
 ![WebGL](https://img.shields.io/badge/WebGL-enabled-blue)
 
 ## Features
