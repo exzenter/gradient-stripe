@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stripe Gradient Stripe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f6f9fc;
+            overflow-x: hidden;
+        }
+
+        .hero-section {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #f6f9fc;
+        }
+
+        /* The gradient stripe container with hard edges */
+        .gradient-stripe-container {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 250px;
+            transform: translateY(-50%) skewY(-12deg);
+            overflow: hidden;
+            background: #ffffff;
+        }
+
+        .gradient-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            color: #0a2540;
+            max-width: 1200px;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.03em;
+        }
+
+        p {
+            font-size: clamp(1.1rem, 2vw, 1.5rem);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            color: #425466;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: #635bff;
+            color: white;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(99, 91, 255, 0.2);
+        }
+
+        .cta-button:hover {
+            background: #554eda;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 91, 255, 0.3);
+        }
+
+        /* Settings Panel */
+        .settings-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .settings-toggle:hover {
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .settings-panel {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            width: 320px;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: translateX(400px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        .settings-panel.open {
+            transform: translateX(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .settings-panel h3 {
+            margin: 0 0 20px 0;
+            font-size: 1.3rem;
+            color: #0a2540;
+        }
+
+        .setting-group {
+            margin-bottom: 24px;
+        }
+
+        .setting-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #425466;
+            font-size: 0.9rem;
+        }
+
+        .setting-group input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e3e8ee;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .setting-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #635bff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .setting-group input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 8px rgba(99, 91, 255, 0.1);
+        }
+
+        .setting-group input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #635bff;
+            cursor: pointer;
+            border: none;
+        }
+
+        .setting-group input[type="color"] {
+            width: 100%;
+            height: 40px;
+            border: 2px solid #e3e8ee;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        .setting-value {
+            display: inline-block;
+            margin-left: 8px;
+            color: #635bff;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .color-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            padding: 8px 14px;
+            border: 2px solid #e3e8ee;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .preset-btn:hover {
+            border-color: #635bff;
+            background: rgba(99, 91, 255, 0.05);
+            transform: translateY(-1px);
+        }
+
+        .preset-btn.active {
+            border-color: #635bff;
+            background: #635bff;
+            color: white;
+        }
+
+        .pause-btn {
+            width: 100%;
+            padding: 12px;
+            background: #635bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+        }
+
+        .pause-btn:hover {
+            background: #554eda;
+            transform: translateY(-1px);
+        }
+
+        .pause-btn.paused {
+            background: #ff6b6b;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Settings Toggle Button -->
+    <button class="settings-toggle" id="settingsToggle">⚙️ Settings</button>
+
+    <!-- Settings Panel -->
+    <div class="settings-panel" id="settingsPanel">
+        <h3>Gradient Settings</h3>
+
+        <div class="setting-group">
+            <label>Color Presets</label>
+            <div class="preset-buttons">
+                <button class="preset-btn active" data-preset="lemonlime">LemonLime</button>
+                <button class="preset-btn" data-preset="sunset">Sunset</button>
+                <button class="preset-btn" data-preset="ocean">Ocean</button>
+                <button class="preset-btn" data-preset="purple">Purple</button>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <label>Custom Colors</label>
+            <div class="color-inputs">
+                <div>
+                    <label style="font-size: 0.8rem;">Color 1</label>
+                    <input type="color" id="color1" value="#1dcb5d">
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem;">Color 2</label>
+                    <input type="color" id="color2" value="#ffe85e">
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem;">Color 3</label>
+                    <input type="color" id="color3" value="#ffa832">
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem;">Color 4</label>
+                    <input type="color" id="color4" value="#ffce48">
+                </div>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <label>Animation Speed <span class="setting-value" id="speedValue">1.0x</span></label>
+            <input type="range" id="speed" min="0" max="3" step="0.1" value="1">
+        </div>
+
+        <div class="setting-group">
+            <label>Stripe Angle <span class="setting-value" id="angleValue">-12°</span></label>
+            <input type="range" id="angle" min="-30" max="30" step="1" value="-12">
+        </div>
+
+        <div class="setting-group">
+            <label>Stripe Height <span class="setting-value" id="heightValue">250px</span></label>
+            <input type="range" id="height" min="100" max="500" step="10" value="250">
+        </div>
+
+        <div class="setting-group">
+            <label>Noise Scale <span class="setting-value" id="scaleValue">1.0x</span></label>
+            <input type="range" id="noiseScale" min="0.5" max="3" step="0.1" value="1">
+        </div>
+
+        <div class="setting-group">
+            <label>Blur Amount <span class="setting-value" id="blurValue">0px</span></label>
+            <input type="range" id="blur" min="0" max="100" step="5" value="0">
+        </div>
+
+        <div class="setting-group">
+            <button class="pause-btn" id="pauseBtn">⏸️ Pause Animation</button>
+        </div>
+    </div>
+
+    <section class="hero-section">
+        <div class="gradient-stripe-container">
+            <canvas class="gradient-canvas" id="gradientCanvas"></canvas>
+        </div>
+        <div class="hero-content">
+            <h1>Stripe Billing</h1>
+            <p>End-to-end billing software, no code required</p>
+            <a href="#" class="cta-button">Get started</a>
+        </div>
+    </section>
+
+    <script>
+        const canvas = document.getElementById('gradientCanvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+
+        // Settings
+        let animationSpeed = 1.0;
+        let noiseScaleMultiplier = 1.0;
+        let isPaused = false;
+        let currentColors = {
+            color1: { r: 0.114, g: 0.796, b: 0.365 },
+            color2: { r: 1.0, g: 0.898, b: 0.369 },
+            color3: { r: 1.0, g: 0.659, b: 0.196 },
+            color4: { r: 1.0, g: 0.808, b: 0.282 }
+        };
+
+        // Color presets
+        const presets = {
+            lemonlime: {
+                color1: '#1dcb5d',
+                color2: '#ffe85e',
+                color3: '#ffa832',
+                color4: '#ffce48'
+            },
+            sunset: {
+                color1: '#ff6b6b',
+                color2: '#ffa500',
+                color3: '#ff1493',
+                color4: '#ff69b4'
+            },
+            ocean: {
+                color1: '#00d4ff',
+                color2: '#0066cc',
+                color3: '#0099ff',
+                color4: '#00ffff'
+            },
+            purple: {
+                color1: '#9b59b6',
+                color2: '#e74c3c',
+                color3: '#8e44ad',
+                color4: '#c0392b'
+            }
+        };
+
+        // Settings panel toggle
+        const settingsToggle = document.getElementById('settingsToggle');
+        const settingsPanel = document.getElementById('settingsPanel');
+
+        settingsToggle.addEventListener('click', () => {
+            settingsPanel.classList.toggle('open');
+        });
+
+        // Preset buttons
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const preset = btn.dataset.preset;
+                const colors = presets[preset];
+
+                document.getElementById('color1').value = colors.color1;
+                document.getElementById('color2').value = colors.color2;
+                document.getElementById('color3').value = colors.color3;
+                document.getElementById('color4').value = colors.color4;
+
+                updateColors();
+            });
+        });
+
+        // Helper: hex to RGB
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16) / 255,
+                g: parseInt(result[2], 16) / 255,
+                b: parseInt(result[3], 16) / 255
+            } : null;
+        }
+
+        // Update colors
+        function updateColors() {
+            currentColors.color1 = hexToRgb(document.getElementById('color1').value);
+            currentColors.color2 = hexToRgb(document.getElementById('color2').value);
+            currentColors.color3 = hexToRgb(document.getElementById('color3').value);
+            currentColors.color4 = hexToRgb(document.getElementById('color4').value);
+        }
+
+        // Color inputs
+        ['color1', 'color2', 'color3', 'color4'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateColors);
+        });
+
+        // Speed control
+        const speedSlider = document.getElementById('speed');
+        const speedValue = document.getElementById('speedValue');
+        speedSlider.addEventListener('input', (e) => {
+            animationSpeed = parseFloat(e.target.value);
+            speedValue.textContent = animationSpeed.toFixed(1) + 'x';
+        });
+
+        // Angle control
+        const angleSlider = document.getElementById('angle');
+        const angleValue = document.getElementById('angleValue');
+        const stripeContainer = document.querySelector('.gradient-stripe-container');
+        angleSlider.addEventListener('input', (e) => {
+            const angle = e.target.value;
+            angleValue.textContent = angle + '°';
+            stripeContainer.style.transform = `translateY(-50%) skewY(${angle}deg)`;
+        });
+
+        // Height control
+        const heightSlider = document.getElementById('height');
+        const heightValue = document.getElementById('heightValue');
+        heightSlider.addEventListener('input', (e) => {
+            const height = e.target.value;
+            heightValue.textContent = height + 'px';
+            stripeContainer.style.height = height + 'px';
+        });
+
+        // Noise scale control
+        const scaleSlider = document.getElementById('noiseScale');
+        const scaleValue = document.getElementById('scaleValue');
+        scaleSlider.addEventListener('input', (e) => {
+            noiseScaleMultiplier = parseFloat(e.target.value);
+            scaleValue.textContent = noiseScaleMultiplier.toFixed(1) + 'x';
+        });
+
+        // Blur control
+        const blurSlider = document.getElementById('blur');
+        const blurValue = document.getElementById('blurValue');
+        blurSlider.addEventListener('input', (e) => {
+            const blur = e.target.value;
+            blurValue.textContent = blur + 'px';
+            canvas.style.filter = blur > 0 ? `blur(${blur}px)` : 'none';
+        });
+
+        // Pause button
+        const pauseBtn = document.getElementById('pauseBtn');
+        pauseBtn.addEventListener('click', () => {
+            isPaused = !isPaused;
+            pauseBtn.classList.toggle('paused');
+            pauseBtn.textContent = isPaused ? '▶️ Resume Animation' : '⏸️ Pause Animation';
+        });
+
+        if (!gl) {
+            console.error('WebGL not supported, falling back to solid color');
+            canvas.style.background = 'linear-gradient(90deg, #1dcb5d, #ffe85e, #ffa832)';
+        }
+
+        // Vertex shader
+        const vertexShaderSource = `
+            attribute vec2 a_position;
+            void main() {
+                gl_Position = vec4(a_position, 0.0, 1.0);
+            }
+        `;
+
+        // Fragment shader with mesh gradient
+        const fragmentShaderSource = `
+            precision highp float;
+            uniform vec2 u_resolution;
+            uniform float u_time;
+            uniform vec3 u_color1;
+            uniform vec3 u_color2;
+            uniform vec3 u_color3;
+            uniform vec3 u_color4;
+            uniform float u_noiseScale;
+
+            // 3D Simplex noise
+            vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+            vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+            vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+
+            float snoise(vec2 v) {
+                const vec4 C = vec4(0.211324865405187,
+                                    0.366025403784439,
+                                   -0.577350269189626,
+                                    0.024390243902439);
+                vec2 i  = floor(v + dot(v, C.yy));
+                vec2 x0 = v -   i + dot(i, C.xx);
+                vec2 i1;
+                i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+                vec4 x12 = x0.xyxy + C.xxzz;
+                x12.xy -= i1;
+                i = mod289(i);
+                vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0))
+                    + i.x + vec3(0.0, i1.x, 1.0));
+                vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+                m = m*m;
+                m = m*m;
+                vec3 x = 2.0 * fract(p * C.www) - 1.0;
+                vec3 h = abs(x) - 0.5;
+                vec3 ox = floor(x + 0.5);
+                vec3 a0 = x - ox;
+                m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
+                vec3 g;
+                g.x  = a0.x  * x0.x  + h.x  * x0.y;
+                g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+                return 130.0 * dot(m, g);
+            }
+
+            void main() {
+                vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+                vec2 pos = gl_FragCoord.xy;
+                
+                // Create flowing mesh gradient effect
+                float scale = 0.0015 / u_noiseScale;
+                float timeScale = 0.0004;
+                
+                // Multiple layers of noise for organic movement
+                float noise1 = snoise(pos * scale + vec2(u_time * timeScale * 0.7, u_time * timeScale * 0.3));
+                float noise2 = snoise(pos * scale * 2.3 + vec2(-u_time * timeScale * 0.5, u_time * timeScale * 0.8));
+                float noise3 = snoise(pos * scale * 0.6 + vec2(u_time * timeScale * 0.4, -u_time * timeScale * 0.6));
+                
+                // Combine noise layers
+                float combinedNoise = noise1 * 0.5 + noise2 * 0.3 + noise3 * 0.2;
+                
+                // Create mesh points that move
+                vec2 meshFreq = vec2(3.0, 2.0);
+                float meshNoise = sin(uv.x * meshFreq.x + u_time * 0.001) * 
+                                  cos(uv.y * meshFreq.y - u_time * 0.0008);
+                
+                combinedNoise = combinedNoise * 0.7 + meshNoise * 0.3;
+                
+                // Map noise to colors with smooth transitions
+                float t = (combinedNoise + 1.0) * 0.5; // Normalize to 0-1
+                t = smoothstep(0.0, 1.0, t); // Smooth interpolation
+                
+                vec3 finalColor;
+                if (t < 0.33) {
+                    finalColor = mix(u_color1, u_color2, smoothstep(0.0, 0.33, t) * 3.0);
+                } else if (t < 0.66) {
+                    finalColor = mix(u_color2, u_color3, smoothstep(0.33, 0.66, t) * 3.0);
+                } else {
+                    finalColor = mix(u_color3, u_color4, smoothstep(0.66, 1.0, t) * 3.0);
+                }
+                
+                gl_FragColor = vec4(finalColor, 1.0);
+            }
+        `;
+
+        // Compile shader
+        function createShader(gl, type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+                gl.deleteShader(shader);
+                return null;
+            }
+            return shader;
+        }
+
+        // Create program
+        function createProgram(gl, vertexShader, fragmentShader) {
+            const program = gl.createProgram();
+            gl.attachShader(program, vertexShader);
+            gl.attachShader(program, fragmentShader);
+            gl.linkProgram(program);
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                console.error('Program link error:', gl.getProgramInfoLog(program));
+                gl.deleteProgram(program);
+                return null;
+            }
+            return program;
+        }
+
+        const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+        const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+        const program = createProgram(gl, vertexShader, fragmentShader);
+
+        // Set up geometry (full-screen quad)
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            -1, -1,
+            1, -1,
+            -1, 1,
+            1, 1,
+        ]), gl.STATIC_DRAW);
+
+        const positionLocation = gl.getAttribLocation(program, 'a_position');
+        const resolutionLocation = gl.getUniformLocation(program, 'u_resolution');
+        const timeLocation = gl.getUniformLocation(program, 'u_time');
+        const color1Location = gl.getUniformLocation(program, 'u_color1');
+        const color2Location = gl.getUniformLocation(program, 'u_color2');
+        const color3Location = gl.getUniformLocation(program, 'u_color3');
+        const color4Location = gl.getUniformLocation(program, 'u_color4');
+        const noiseScaleLocation = gl.getUniformLocation(program, 'u_noiseScale');
+
+        let time = 0;
+        const container = document.querySelector('.gradient-stripe-container');
+
+        function resize() {
+            const rect = container.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            gl.viewport(0, 0, canvas.width, canvas.height);
+        }
+
+        function render() {
+            if (!isPaused) {
+                time += animationSpeed;
+            }
+
+            gl.clearColor(1, 1, 1, 1);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            gl.useProgram(program);
+
+            // Set uniforms
+            gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
+            gl.uniform1f(timeLocation, time);
+            gl.uniform3f(color1Location, currentColors.color1.r, currentColors.color1.g, currentColors.color1.b);
+            gl.uniform3f(color2Location, currentColors.color2.r, currentColors.color2.g, currentColors.color2.b);
+            gl.uniform3f(color3Location, currentColors.color3.r, currentColors.color3.g, currentColors.color3.b);
+            gl.uniform3f(color4Location, currentColors.color4.r, currentColors.color4.g, currentColors.color4.b);
+            gl.uniform1f(noiseScaleLocation, noiseScaleMultiplier);
+
+            // Set up position attribute
+            gl.enableVertexAttribArray(positionLocation);
+            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+            gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+            // Draw
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+            requestAnimationFrame(render);
+        }
+
+        resize();
+        window.addEventListener('resize', resize);
+        render();
+    </script>
+</body>
+
+</html>
