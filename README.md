@@ -2,7 +2,7 @@
 
 A high-performance recreation of Stripe's animated mesh gradient effect, implemented with WebGL and customized through an interactive control panel.
 
-[Live Demo](https://exzenter.github.io/gradient-stripe/)
+[Live Demo](https://exzenter.github.io/gradient-stripe/stripe-gradient.html)
 
 ## Technical Implementation: Tricks and Finesses
 
