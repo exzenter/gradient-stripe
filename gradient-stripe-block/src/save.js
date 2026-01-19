@@ -9,13 +9,13 @@ export default function save({ attributes }) {
         color1, color2, color3, color4,
         animationSpeed, stripeAngle, stripeHeight, stripeTranslateX, stripeTranslateY,
         noiseScale, turbulence, octaves, lacunarity, meshIntensity,
-        colorBlendMode, blendStrength, blur, blurIsolation
+        colorBlendMode, blendStrength, blur, blurIsolation, ignoreGlobalPadding
     } = attributes;
 
     const TagName = tagName || 'div';
 
     const blockProps = useBlockProps.save({
-        className: `${stripeOverflow ? 'gsb-overflow-visible' : ''} ${blurIsolation ? 'gsb-blur-isolated' : ''}`.trim(),
+        className: `${stripeOverflow ? 'gsb-overflow-visible' : ''} ${blurIsolation ? 'gsb-blur-isolated' : ''} ${ignoreGlobalPadding ? 'gsb-ignore-global-padding' : ''}`.trim(),
         style: {
             minHeight: minHeight || undefined,
         },

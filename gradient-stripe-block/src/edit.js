@@ -30,7 +30,7 @@ export default function Edit({ attributes, setAttributes }) {
         color1, color2, color3, color4,
         animationSpeed, stripeAngle, stripeHeight, stripeTranslateX, stripeTranslateY,
         noiseScale, turbulence, octaves, lacunarity, meshIntensity,
-        colorBlendMode, blendStrength, blur, blurIsolation, importExportJson
+        colorBlendMode, blendStrength, blur, blurIsolation, ignoreGlobalPadding, importExportJson
     } = attributes;
 
     const [toastMessage, setToastMessage] = useState('');
@@ -266,7 +266,7 @@ export default function Edit({ attributes, setAttributes }) {
             chaos: { noiseScale, turbulence, octaves, lacunarity, meshIntensity },
             blend: { colorBlendMode, blendStrength },
             effects: { blur, blurIsolation },
-            layout: { stripeMode, stripeOverflow, minHeight }
+            layout: { stripeMode, stripeOverflow, minHeight, ignoreGlobalPadding }
         };
         const json = JSON.stringify(settings, null, 2);
         setAttributes({ importExportJson: json });
@@ -284,14 +284,14 @@ export default function Edit({ attributes, setAttributes }) {
             if (s.blend) { if (s.blend.colorBlendMode !== undefined) a.colorBlendMode = s.blend.colorBlendMode; if (s.blend.blendStrength !== undefined) a.blendStrength = s.blend.blendStrength; }
             if (s.effects?.blur !== undefined) a.blur = s.effects.blur;
             if (s.effects?.blurIsolation !== undefined) a.blurIsolation = s.effects.blurIsolation;
-            if (s.layout) { if (s.layout.stripeMode !== undefined) a.stripeMode = s.layout.stripeMode; if (s.layout.stripeOverflow !== undefined) a.stripeOverflow = s.layout.stripeOverflow; if (s.layout.minHeight) a.minHeight = s.layout.minHeight; }
+            if (s.layout) { if (s.layout.stripeMode !== undefined) a.stripeMode = s.layout.stripeMode; if (s.layout.stripeOverflow !== undefined) a.stripeOverflow = s.layout.stripeOverflow; if (s.layout.minHeight) a.minHeight = s.layout.minHeight; if (s.layout.ignoreGlobalPadding !== undefined) a.ignoreGlobalPadding = s.layout.ignoreGlobalPadding; }
             setAttributes(a);
             setToastMessage('✅ Imported!'); setTimeout(() => setToastMessage(''), 2000);
         } catch (e) { setToastMessage('❌ Invalid JSON'); setTimeout(() => setToastMessage(''), 2000); }
     };
 
     const blockProps = useBlockProps({
-        className: `${stripeOverflow ? 'gsb-overflow-visible' : ''} ${blurIsolation ? 'gsb-blur-isolated' : ''}`.trim(),
+        className: `${stripeOverflow ? 'gsb-overflow-visible' : ''} ${blurIsolation ? 'gsb-blur-isolated' : ''} ${ignoreGlobalPadding ? 'gsb-ignore-global-padding' : ''}`.trim(),
         style: { minHeight: minHeight || undefined }
     });
     const innerBlocksProps = useInnerBlocksProps({ className: 'gsb-gradient-content' }, { renderAppender: InnerBlocks.DefaultBlockAppender });
@@ -315,6 +315,12 @@ export default function Edit({ attributes, setAttributes }) {
                     <ToggleControl label="Stripe Mode" help={stripeMode ? 'Diagonal stripe' : 'Full background'} checked={stripeMode} onChange={(v) => setAttributes({ stripeMode: v })} />
                     <UnitControl label="Minimum Height" value={minHeight} onChange={(v) => setAttributes({ minHeight: v })} />
                     <SelectControl label="HTML Element" value={tagName} options={tagNameOptions} onChange={(v) => setAttributes({ tagName: v })} />
+                    <ToggleControl
+                        label="Ignore Global Padding"
+                        help={ignoreGlobalPadding ? 'Background extends to full width' : 'Respects theme padding'}
+                        checked={ignoreGlobalPadding}
+                        onChange={(v) => setAttributes({ ignoreGlobalPadding: v })}
+                    />
                     {stripeMode && (
                         <>
                             <RangeControl label="Angle" value={stripeAngle} onChange={(v) => setAttributes({ stripeAngle: v })} min={-45} max={45} />

@@ -95,3 +95,21 @@
     right: 0;
     width: 100%;
 }
+
+/* Break out of WP 2025 theme's global padding */
+/* Only apply when block has alignfull AND ignoreGlobalPadding is enabled */
+.has-global-padding .wp-block-gsb-gradient-stripe.alignfull.gsb-ignore-global-padding {
+    /* Calculate the global padding value (typically 2rem or var(--wp--style--root--padding-right)) */
+    /* Use negative margins to break out of the padding container */
+    margin-left: calc(-1 * var(--wp--style--root--padding-left, 2rem));
+    margin-right: calc(-1 * var(--wp--style--root--padding-right, 2rem));
+    /* Extend the width to compensate */
+    width: calc(100% + var(--wp--style--root--padding-left, 2rem) + var(--wp--style--root--padding-right, 2rem));
+    max-width: none;
+}
+
+/* Ensure the content inside still respects global padding */
+.has-global-padding .wp-block-gsb-gradient-stripe.alignfull.gsb-ignore-global-padding>.gsb-gradient-content {
+    padding-left: var(--wp--style--root--padding-left, 2rem);
+    padding-right: var(--wp--style--root--padding-right, 2rem);
+}
