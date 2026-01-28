@@ -280,9 +280,33 @@
         render();
     }
 
-    // Initialize all gradient canvases on page load
-    document.addEventListener('DOMContentLoaded', function () {
+    // 1. Define your init function
+    function startMyCanvasAnimation(force = false) {
+        // Prevent double-init unless forced (e.g. by transition engine)
+        if (window.hasMyCanvasAnimationStarted && !force) return;
+        window.hasMyCanvasAnimationStarted = true;
+
+        console.log('Starting Canvas Animation' + (force ? ' (Forced)' : '') + '...');
         const canvases = document.querySelectorAll('.gsb-gradient-canvas');
         canvases.forEach(initGradient);
+    }
+
+    // 2. EXPOSE GLOBALLY (Crucial!)
+    window.initializeOnPageCanvasAfterTransition = () => startMyCanvasAnimation(true);
+
+    // 3. Handle Normal Page Loads (Fallback)
+    window.addEventListener('load', () => {
+        // If NO transition overlay is present, start immediately.
+        // If an overlay IS present, do nothing; the engine will call the hook above.
+        if (!document.querySelector('.transition-overlay')) {
+            startMyCanvasAnimation();
+        }
+    });
+
+    // Also keep DOMContentLoaded for faster init on pages without transitions
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!document.querySelector('.transition-overlay')) {
+            startMyCanvasAnimation();
+        }
     });
 })();
